@@ -1,0 +1,63 @@
+{
+  "machine_type": "dell",
+  "host": "Dell Precision 16s (5 Series)",
+  "processor": {
+    "name": "Intel Core Ultra 5 336H vPro",
+    "cores": 12,
+    "max_clock_ghz": 4.6,
+    "npu": "Intel AI Boost, 47 TOPS"
+  },
+  "memory": {
+    "capacity": "32GB (1x32GB) LPCAMM2",
+    "speed": "up to 8533 MT/s LPDDR5x"
+  },
+  "storage": {
+    "device": "512 GB SSD Gen4x4 TLC NVMe",
+    "notes": "Bracket for M.2 PCIe 2230 SSD"
+  },
+  "display": {
+    "size": "16\"",
+    "resolution": "WUXGA 1920x1200 (16:10)",
+    "touch": false,
+    "brightness_nits": 400
+  },
+  "graphics": "Intel Integrated Graphics",
+  "wireless": {
+    "wifi": "Intel Wi-Fi 7 BE211",
+    "bluetooth": "Bluetooth Core 6.0"
+  },
+  "camera": {
+    "video": "FHD RGB HDR + IR (1080p @ 30fps)",
+    "features": ["Presence Detection", "TNR", "Camera Shutter"]
+  },
+  "battery": {
+    "cells": 3,
+    "capacity_wh": 70,
+    "expresscharge": true
+  },
+  "chassis": {
+    "material": "Aluminum (top, palmrest, bottom)",
+    "weight_kg": 1.9,
+    "weight_lb": 4.2
+  },
+  "warranty": "36 Months ProSupport with Onsite Service",
+  "ports": [
+    { "type": "USB-C Thunderbolt 4", "count": 2, "detail": "40 Gbps, DisplayPort 2.1, Power Delivery" },
+    { "type": "USB-A 3.2 Gen 1 (PowerShare)", "count": 1, "detail": "5 Gbps with device charging" },
+    { "type": "USB-A 3.2 Gen 1", "count": 1, "detail": "5 Gbps high-speed data" },
+    { "type": "HDMI 2.1", "count": 1, "detail": "Native 4K/8K external display output" },
+    { "type": "RJ45 Ethernet", "count": 1, "detail": "1 GbE full duplex" },
+    { "type": "Headset jack", "count": 1, "detail": "3.5mm combo audio and microphone" }
+  ],
+  "guest": {
+    "machine_type": "dell",
+    "kind": "native Ubuntu GUI container",
+    "desktop": "Ubuntu KDE desktop",
+    "hypervisor_overhead": "none (native kernel, no QEMU/TCG)"
+  },
+  "container": {
+    "name": "ubuntu-desktop-precision",
+    "image": "lscr.io/linuxserver/webtop:ubuntu-kde",
+    "command": "docker run -d --name ubuntu-desktop-precision --shm-size=1g -p 3000:3000 lscr.io/linuxserver/webtop:ubuntu-kde"
+  }
+}
