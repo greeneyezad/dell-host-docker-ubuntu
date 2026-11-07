@@ -51,13 +51,14 @@
   ],
   "guest": {
     "machine_type": "dell",
-    "kind": "native Ubuntu GUI container",
-    "desktop": "Ubuntu KDE desktop",
+    "kind": "native Debian GUI container",
+    "os": "Debian GNU/Linux 13 (trixie)",
+    "desktop": "Cinnamon 6.4 desktop",
     "hypervisor_overhead": "none (native kernel, no QEMU/TCG)"
   },
   "container": {
-    "name": "ubuntu-desktop-precision",
-    "image": "lscr.io/linuxserver/webtop:ubuntu-kde",
-    "command": "docker run -d --name ubuntu-desktop-precision --shm-size=1g -p 3000:3000 lscr.io/linuxserver/webtop:ubuntu-kde"
+    "name": "debian-cinnamon-precision",
+    "image": "base44/debian-cinnamon-desktop (Debian 13 trixie + Cinnamon)",
+    "command": "docker compose up -d  (noVNC desktop on http://localhost:3000)"
   }
 }
