@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dell Precision 16s Workstation & Native Ubuntu Container Simulator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for System Monitor -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script>
+        // Define Window & Interaction Functions on Global Window Object Immediately in <head>
+        let activeZIndex = 40;
+        let systemChart = null;
+
+        // Draggable Windows Logic Variables
+        let currentDragWin = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+
+        window.startDrag = function(e, winId) {
+            currentDragWin = document.getElementById(winId);
+            window.bringToFront(winId);
+            const rect = currentDragWin.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        };
+
+        function onDrag(e) {
+            if (!currentDragWin) return;
+            const container = document.getElementById('windows-layer').getBoundingClientRect();
+            let newX = e.clientX - container.left - dragOffsetX;
+            let newY = e.clientY - container.top - dragOffsetY;
+
+            // Boundaries
+            newX = Math.max(0, Math.min(newX, container.width - 100));
+            newY = Math.max(0, Math.min(newY, container.height - 50));
+
+            currentDragWin.style.left = `${newX}px`;
+            currentDragWin.style.top = `${newY}px`;
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            currentDragWin = null;
+        }
+
+        window.openApp = function(winId) {
+            const target = document.getElementById(`win-${winId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                window.bringToFront(`win-${winId}`);
+            }
+        };
+
+        window.closeWin = function(winId) {
+            const target = document.getElementById(winId);
+            if (target) {
+                target.classList.add('hidden');
+            }
+        };
+
+        window.minimizeWin = function(winId) {
+            window.closeWin(winId);
+        };
+
+        window.maximizeWin = function(winId) {
+            const target = document.getElementById(winId);
+            if (target) {
+                if (target.style.width === '100%') {
+                    target.style.width = '';
+                    target.style.height = '';
+                    target.style.top = '2rem';
+                    target.style.left = '2rem';
+                } else {
+                    target.style.width = '100%';
+                    target.style.height = '100%';
+                    target.style.top = '0';
+                    target.style.left = '0';
+                }
+            }
+        };
+
+        window.bringToFront = function(winId) {
+            const target = document.getElementById(winId);
+            if (target) {
+                activeZIndex++;
+                target.style.zIndex = activeZIndex;
+            }
+        };
+
+        window.toggleDrawer = function(drawerId) {
+            const drawer = document.getElementById(drawerId);
+            if (!drawer) return;
+            if (drawerId === 'specs-drawer') {
+                drawer.classList.toggle('translate-x-full');
+            } else if (drawerId === 'ports-drawer') {
+                drawer.classList.toggle('-translate-x-full');
+            }
+        };
+
+        window.resetDesktopState = function() {
+            window.openApp('spec-inspector');
+            window.openApp('terminal');
+            const termOut = document.getElementById('terminal-output');
+            if (termOut) termOut.innerHTML = '';
+        };
+
+        // Terminal Interactive Commands defined globally in <head>
+        window.handleTerminalCommand = function(e) {
+            if (e.key === 'Enter') {
+                const input = e.target.value.trim();
+                const outputContainer = document.getElementById('terminal-output');
+                if (!outputContainer) return;
+                
+                // Add user line
+                const userCmdLine = document.createElement('div');
+                userCmdLine.innerHTML = `<span class="text-emerald-400 font-bold">dell@precision-16s:~$</span> <span>${escapeHtml(input)}</span>`;
+                outputContainer.appendChild(userCmdLine);
+
+                // Process Command
+                const responseLine = document.createElement('div');
+                responseLine.className = 'text-slate-300 ml-2 mb-2';
+
+                switch(input.toLowerCase()) {
+                    case 'lscpu':
+                        responseLine.innerHTML = `Architecture:          x86_64<br>
+CPU op-mode(s):        32-bit, 64-bit<br>
+Model name:            Intel(R) Core(TM) Ultra 5 336H vPro(R)<br>
+Cores / Threads:       12 Cores / 16 Threads<br>
+Max Speed:             4.6000 GHz<br>
+NPU Coprocessor:       Intel AI Boost (47 TOPS)<br>
+Hypervisor vendor:     Native LXC / Container (No QEMU TCG Overhead)`;
+                        break;
+                    case 'free -h':
+                    case 'free':
+                        responseLine.innerHTML = `              total        used        free      shared  buff/cache   available<br>
+Mem:           31Gi       5.8Gi       18.4Gi       210Mi       7.6Gi       25.1Gi<br>
+Swap:          11Gi          0B        11Gi<br>
+<span class="text-purple-400">Type: 32GB LPCAMM2 LPDDR5x @ 8533 MT/s</span>`;
+                        break;
+                    case 'neofetch':
+                        responseLine.innerHTML = `<pre class="text-ubuntu-orange font-mono text-xs">
+       .-/+huosaaa\`    <span class="text-white font-bold">dell@precision-16s</span>
+    \`:/`       \` font-mono  ------------------
+  \`+hnvvvvvvvvvvvvvvvvvh+\`  <span class="text-dell-accent">OS</span>: Ubuntu 24.04 LTS x86_64
+ .hnvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">Host</span>: Dell Precision 16s (5 Series)
+.hnvvvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">Kernel</span>: Linux 6.8.0-45-generic
+:hvvvvvvvvvvvvvvvvvvvvvvvh: <span class="text-dell-accent">Uptime</span>: 14 days, 3 hours
+.hnvvvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">Container</span>: Native Docker / LXC (No QEMU)
+ .hnvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">CPU</span>: Intel Core Ultra 5 336H (12) @ 4.6GHz
+  \`+hnvvvvvvvvvvvvvvvh+\`   <span class="text-dell-accent">NPU</span>: Intel Integrated (47 TOPS)
+    \`:/`       \`           <span class="text-dell-accent">Memory</span>: 6144MiB / 32768MiB (8533 MT/s)
+       .-/+huosaaa\`        
+</pre>`;
+                        break;
+                    case 'docker ps':
+                        responseLine.innerHTML = `CONTAINER ID   IMAGE                   COMMAND                  CREATED        STATUS        PORTS
+9a8f7c1e3b2a   ubuntu-desktop:latest   "/init"                  2 hours ago    Up 2 hours    0.0.0.0:5900->5900/tcp`;
+                        break;
+                    case 'uname -a':
+                        responseLine.innerHTML = `Linux precision-16s 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC x86_64 x86_64 x86_64 GNU/Linux`;
+                        break;
+                    case 'help':
+                        responseLine.innerHTML = `Available commands: <span class="text-dell-accent">lscpu</span>, <span class="text-dell-accent">free -h</span>, <span class="text-dell-accent">neofetch</span>, <span class="text-dell-accent">docker ps</span>, <span class="text-dell-accent">uname -a</span>, <span class="text-dell-accent">clear</span>`;
+                        break;
+                    case 'clear':
+                        outputContainer.innerHTML = '';
+                        e.target.value = '';
+                        return;
+                    case '':
+                        responseLine.innerHTML = '';
+                        break;
+                    default:
+                        responseLine.innerHTML = `bash: command not found: ${escapeHtml(input)}. Type <span class="text-dell-accent">help</span> for commands.`;
+                }
+
+                outputContainer.appendChild(responseLine);
+                e.target.value = '';
+                const termBody = document.getElementById('terminal-body');
+                if (termBody) termBody.scrollTop = termBody.scrollHeight;
+            }
+        };
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    colors: {
+                        dell: {
+                            blue: '#0076CE',
+                            dark: '#0e1726',
+                            slate: '#1e293b',
+                            aluminum: '#94a3b8',
+                            accent: '#38bdf8'
+                        },
+                        ubuntu: {
+                            orange: '#E95420',
+                            aubergine: '#77216F',
+                            darkAubergine: '#5E2750'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
+
+        /* Metallic Frame Gradients */
+        .aluminum-finish {
+            background: linear-gradient(135deg, #334155 0%, #1e293b 50%, #0f172a 100%);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        .chassis-border {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* CRT/Screen subtle glow */
+        .display-screen {
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Window Dragging & Layering */
+        .desktop-window {
+            position: absolute;
+            transition: box-shadow 0.2s ease;
+        }
+        .desktop-window.active {
+            z-index: 40;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 189, 248, 0.3);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans select-none overflow-hidden bg-slate-950 text-slate-200">
+
+    <!-- TOP HEADER / CONTROL BAR -->
+    <header class="h-12 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between z-50">
+        <div class="flex items-center space-x-3">
+            <span class="text-dell-blue font-black tracking-wider text-xl flex items-center gap-1.5">
+                <i class="fa-solid fa-laptop text-dell-accent"></i> DELL
+            </span>
+            <span class="text-slate-400 font-medium text-xs sm:text-sm border-l border-slate-700 pl-3">
+                Precision 16s Workstation <span class="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-500/20 ml-1">5 Series</span>
+            </span>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs">
+            <button id="toggle-specs-btn" onclick="toggleDrawer('specs-drawer')" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-2 transition">
+                <i class="fa-solid fa-microchip text-dell-accent"></i>
+                <span class="hidden md:inline">Hardware Specs</span>
+            </button>
+            <button id="toggle-ports-btn" onclick="toggleDrawer('ports-drawer')" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-2 transition">
+                <i class="fa-solid fa-plug text-green-400"></i>
+                <span class="hidden md:inline">Ports & I/O</span>
+            </button>
+            <button onclick="resetDesktopState()" class="px-3 py-1.5 rounded-md bg-red-950/60 hover:bg-red-900/60 text-red-300 border border-red-800/40 flex items-center gap-2 transition">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span class="hidden sm:inline">Reset VM</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN LAPTOP VIEWPORT CONTAINMENT -->
+    <main class="flex-1 relative flex items-center justify-center p-2 sm:p-4 md:p-6 bg-radial from-slate-900 via-slate-950 to-black overflow-hidden">
+
+        <!-- LAPTOP HARDWARE BEZEL / CHASSIS FRAME -->
+        <div class="w-full max-w-7xl h-full max-h-[92vh] aluminum-finish rounded-2xl p-3 sm:p-4 flex flex-col relative chassis-border">
+            
+            <!-- LAPTOP TOP BEZEL WITH CAMERA & SENSORS -->
+            <div class="h-7 w-full flex items-center justify-between px-4 text-xs text-slate-400 pb-1">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-mono text-[11px] text-slate-300 hidden sm:inline">16" WUXGA 1920x1200 400nit (16:10)</span>
+                </div>
+                
+                <!-- WEBCAM & SENSORS ASSEMBLY -->
+                <div class="flex items-center space-x-2 bg-slate-900/80 px-3 py-0.5 rounded-full border border-slate-700/50">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600" title="IR Camera"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center" title="FHD RGB Camera">
+                        <span class="w-1 h-1 bg-blue-900 rounded-full"></span>
+                    </span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600" title="Presence Sensor"></span>
+                    <span class="text-[10px] text-slate-500 font-mono ml-1">FHD 1080p IR</span>
+                </div>
+
+                <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
+                    <span class="hidden md:inline"><i class="fa-solid fa-shield-halved text-blue-400"></i> Intel vPro®</span>
+                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700">Dell Slate Max</span>
+                </div>
+            </div>
+
+            <!-- VIRTUAL SCREEN CANVAS (UBUNTU OS ENVIRONMENT) -->
+            <div id="laptop-screen" class="flex-1 w-full bg-slate-950 rounded-lg overflow-hidden relative display-screen flex flex-col border border-slate-800 select-text">
+                
+                <!-- UBUNTU TOP BAR -->
+                <div class="h-7 bg-black/90 text-slate-200 text-xs px-3 flex items-center justify-between z-30 font-medium select-none border-b border-white/5">
+                    <div class="flex items-center space-x-4">
+                        <span class="hover:text-white cursor-pointer font-semibold flex items-center gap-1.5">
+                            <i class="fa-brands fa-ubuntu text-ubuntu-orange text-sm"></i> Ubuntu 24.04 LTS (Container)
+                        </span>
+                        <span class="hidden md:inline hover:text-white cursor-pointer text-slate-400 text-[11px]" onclick="openApp('spec-inspector')">
+                            Host: Dell Precision 16s • Native LXC/Docker
+                        </span>
+                    </div>
+
+                    <!-- CLOCK & DATE CENTER -->
+                    <div id="ubuntu-clock" class="text-slate-300 font-mono text-xs hover:text-white cursor-pointer">
+                        Sat Nov 07 08:27
+                    </div>
+
+                    <!-- SYSTEM INDICATORS RIGHT -->
+                    <div class="flex items-center space-x-3 text-slate-300 text-xs">
+                        <span title="Wi-Fi 7 BE211"><i class="fa-solid fa-wifi text-slate-300"></i></span>
+                        <span title="NPU 47 TOPS Active" class="text-emerald-400 text-[10px] font-mono bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">NPU: 12%</span>
+                        <span title="Battery: 70Wh (ExpressCharge)"><i class="fa-solid fa-battery-three-quarters text-emerald-400"></i> 88%</span>
+                        <span title="System Menu" class="cursor-pointer hover:text-white"><i class="fa-solid fa-caret-down"></i></span>
+                    </div>
+                </div>
+
+                <!-- UBUNTU DESKTOP WORKSPACE AREA -->
+                <div id="desktop-workspace" class="flex-1 relative bg-cover bg-center overflow-hidden flex" style="background-image: linear-gradient(135deg, rgba(119,33,111,0.85) 0%, rgba(94,39,80,0.95) 50%, rgba(15,23,42,0.98) 100%), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1600&auto=format&fit=crop');">
+                    
+                    <!-- UBUNTU LEFT DOCK BAR -->
+                    <aside class="w-14 bg-black/60 backdrop-blur-md border-r border-white/5 flex flex-col items-center py-3 space-y-4 z-30 select-none">
+                        
+                        <!-- App Icon: Terminal -->
+                        <button onclick="openApp('terminal')" class="group relative p-2 rounded-xl hover:bg-white/10 transition text-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-emerald-400 font-mono font-bold shadow-md group-hover:scale-105 transition">
+                                &gt;_
+                            </div>
+                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">Terminal (Bash)</span>
+                        </button>
+
+                        <!-- App Icon: System Monitor -->
+                        <button onclick="openApp('system-monitor')" class="group relative p-2 rounded-xl hover:bg-white/10 transition text-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-blue-900/80 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-md group-hover:scale-105 transition">
+                                <i class="fa-solid fa-chart-line text-sm"></i>
+                            </div>
+                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">System Monitor</span>
+                        </button>
+
+                        <!-- App Icon: Native vs QEMU Inspector -->
+                        <button onclick="openApp('spec-inspector')" class="group relative p-2 rounded-xl hover:bg-white/10 transition text-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-ubuntu-orange border border-orange-400/30 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition">
+                                <i class="fa-solid fa-bolt text-sm"></i>
+                            </div>
+                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">Architecture & Performance</span>
+                        </button>
+
+                        <!-- App Icon: File Manager -->
+                        <button onclick="openApp('file-manager')" class="group relative p-2 rounded-xl hover:bg-white/10 transition text-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-amber-600/80 border border-amber-400/30 flex items-center justify-center text-amber-200 shadow-md group-hover:scale-105 transition">
+                                <i class="fa-solid fa-folder-open text-sm"></i>
+                            </div>
+                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">Files</span>
+                        </button>
+
+                        <!-- App Icon: Settings / Hardware -->
+                        <button onclick="toggleDrawer('specs-drawer')" class="group relative p-2 rounded-xl hover:bg-white/10 transition text-slate-200">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-300 shadow-md group-hover:scale-105 transition">
+                                <i class="fa-solid fa-sliders text-sm"></i>
+                            </div>
+                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">Precision Hardware</span>
+                        </button>
+
+                        <div class="flex-1"></div>
+
+                        <!-- App Grid / App Launcher Button -->
+                        <button onclick="openApp('spec-inspector')" class="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition">
+                            <i class="fa-solid fa-border-all text-lg"></i>
+                        </button>
+                    </aside>
+
+                    <!-- DESKTOP WINDOW CONTAINER (DYNAMICALLY DRAGGABLE WINDOWS) -->
+                    <div id="windows-layer" class="flex-1 relative overflow-hidden p-4">
+                        
+                        <!-- WINDOW 1: TERMINAL APP -->
+                        <div id="win-terminal" class="desktop-window glass-panel rounded-xl shadow-2xl border border-slate-700/60 w-full max-w-2xl h-[420px] top-6 left-6 flex flex-col overflow-hidden hidden" onclick="bringToFront('win-terminal')">
+                            <!-- Window Titlebar -->
+                            <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-terminal')">
+                                <div class="flex items-center space-x-2 text-xs font-mono text-slate-300">
+                                    <i class="fa-solid fa-terminal text-emerald-400"></i>
+                                    <span>dell-precision-16s:~ (bash) — Native LXC</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="minimizeWin('win-terminal')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
+                                    <button onclick="maximizeWin('win-terminal')" class="w-3.5 h-3.5 rounded-full bg-green-500/80 hover:bg-green-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-expand"></i></button>
+                                    <button onclick="closeWin('win-terminal')" class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                            <!-- Terminal Body -->
+                            <div id="terminal-body" class="flex-1 bg-slate-950/95 p-4 font-mono text-xs sm:text-sm text-slate-200 overflow-y-auto space-y-2 select-text">
+                                <div class="text-slate-400 text-xs">
+                                    Dell Precision 16s (5 Series) Native Linux Container Shell<br>
+                                    No QEMU/TCG translation layer active. Running at full native bare-metal speed.<br>
+                                    Type <span class="text-dell-accent">help</span> to list available diagnostic commands.
+                                </div>
+                                <div id="terminal-output" class="space-y-2"></div>
+                                
+                                <div class="flex items-center space-x-2 pt-1">
+                                    <span class="text-emerald-400 font-bold">dell@precision-16s:~$</span>
+                                    <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-slate-100 font-mono focus:ring-0" placeholder="Type lscpu, free -h, neofetch, docker ps..." onkeydown="handleTerminalCommand(event)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WINDOW 2: SYSTEM MONITOR (CHART.JS REALTIME) -->
+                        <div id="win-system-monitor" class="desktop-window glass-panel rounded-xl shadow-2xl border border-slate-700/60 w-full max-w-3xl h-[460px] top-12 left-12 sm:left-24 flex flex-col overflow-hidden hidden" onclick="bringToFront('win-system-monitor')">
+                            <!-- Titlebar -->
+                            <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-system-monitor')">
+                                <div class="flex items-center space-x-2 text-xs font-semibold text-slate-300">
+                                    <i class="fa-solid fa-microchip text-dell-accent"></i>
+                                    <span>Precision System Monitor — Core Ultra 5 336H & NPU</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="minimizeWin('win-system-monitor')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
+                                    <button onclick="maximizeWin('win-system-monitor')" class="w-3.5 h-3.5 rounded-full bg-green-500/80 hover:bg-green-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-expand"></i></button>
+                                    <button onclick="closeWin('win-system-monitor')" class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                            <!-- Content -->
+                            <div class="flex-1 bg-slate-950/90 p-4 overflow-y-auto space-y-4">
+                                <!-- Realtime Metrics Cards -->
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                                        <div class="text-[10px] text-slate-400 uppercase font-bold">CPU Usage (12 Cores)</div>
+                                        <div id="stat-cpu-val" class="text-xl font-mono font-bold text-dell-accent mt-1">14%</div>
+                                        <div class="text-[10px] text-slate-500">Up to 4.6 GHz</div>
+                                    </div>
+                                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                                        <div class="text-[10px] text-slate-400 uppercase font-bold">Intel NPU Load</div>
+                                        <div id="stat-npu-val" class="text-xl font-mono font-bold text-emerald-400 mt-1">47 TOPS</div>
+                                        <div class="text-[10px] text-emerald-500/80">Neural Processing Active</div>
+                                    </div>
+                                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                                        <div class="text-[10px] text-slate-400 uppercase font-bold">LPCAMM2 RAM</div>
+                                        <div id="stat-ram-val" class="text-xl font-mono font-bold text-purple-400 mt-1">6.2 / 32 GB</div>
+                                        <div class="text-[10px] text-slate-500">8533 MT/s LPDDR5x</div>
+                                    </div>
+                                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                                        <div class="text-[10px] text-slate-400 uppercase font-bold">Hypervisor Latency</div>
+                                        <div class="text-xl font-mono font-bold text-amber-400 mt-1">0.02 ms</div>
+                                        <div class="text-[10px] text-amber-500/80">Native Container</div>
+                                    </div>
+                                </div>
+
+                                <!-- Chart Canvas -->
+                                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 h-48">
+                                    <canvas id="systemChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WINDOW 3: SPEC INSPECTOR (QEMU VS NATIVE CONTAINER EXPLANATION) -->
+                        <div id="win-spec-inspector" class="desktop-window glass-panel rounded-xl shadow-2xl border border-slate-700/60 w-full max-w-3xl h-[480px] top-8 left-8 sm:left-36 flex flex-col overflow-hidden" onclick="bringToFront('win-spec-inspector')">
+                            <!-- Titlebar -->
+                            <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-spec-inspector')">
+                                <div class="flex items-center space-x-2 text-xs font-semibold text-slate-300">
+                                    <i class="fa-solid fa-bolt text-ubuntu-orange"></i>
+                                    <span>Architecture Comparison: QEMU TCG vs Native Linux Container</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="minimizeWin('win-spec-inspector')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
+                                    <button onclick="maximizeWin('win-spec-inspector')" class="w-3.5 h-3.5 rounded-full bg-green-500/80 hover:bg-green-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-expand"></i></button>
+                                    <button onclick="closeWin('win-spec-inspector')" class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                            <!-- Content -->
+                            <div class="flex-1 bg-slate-950/95 p-5 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-300">
+                                <div class="bg-gradient-to-r from-ubuntu-orange/20 to-slate-900 p-4 rounded-xl border border-ubuntu-orange/30 flex items-start space-x-3">
+                                    <i class="fa-solid fa-circle-check text-ubuntu-orange text-xl mt-0.5"></i>
+                                    <div>
+                                        <h3 class="font-bold text-white text-base">Why Native Containers match Dell Precision 16s Speed</h3>
+                                        <p class="text-slate-300 text-xs mt-1 leading-relaxed">
+                                            Your previous QEMU setup was running in software emulation mode (<code class="bg-slate-800 text-amber-300 px-1 py-0.5 rounded">"accelerator": "tcg"</code>) because nested virtualization was disabled on the host. By switching to a native Docker/LXC container with X11/Wayland or noVNC forwarding, you completely eliminate QEMU CPU instruction translation overhead.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- QEMU TCG BOX -->
+                                    <div class="bg-red-950/30 p-4 rounded-xl border border-red-800/40 space-y-2">
+                                        <div class="flex items-center space-x-2 text-red-400 font-bold">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                            <span>Old Configuration (QEMU TCG)</span>
+                                        </div>
+                                        <ul class="space-y-1.5 text-xs text-slate-400 list-disc pl-4">
+                                            <li><strong class="text-slate-300">Execution:</strong> Software translation via Tiny Code Generator (TCG).</li>
+                                            <li><strong class="text-slate-300">Performance:</strong> 10x to 50x slower than bare metal.</li>
+                                            <li><strong class="text-slate-300">CPU Usage:</strong> Maxes out single core doing software instruction parsing.</li>
+                                            <li><strong class="text-slate-300">RAM Ceiling:</strong> Locked to 16 GB max ceiling.</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- NATIVE CONTAINER BOX -->
+                                    <div class="bg-emerald-950/30 p-4 rounded-xl border border-emerald-800/40 space-y-2">
+                                        <div class="flex items-center space-x-2 text-emerald-400 font-bold">
+                                            <i class="fa-solid fa-rocket"></i>
+                                            <span>New Architecture (LXC / Docker)</span>
+                                        </div>
+                                        <ul class="space-y-1.5 text-xs text-slate-400 list-disc pl-4">
+                                            <li><strong class="text-slate-300">Execution:</strong> Native Linux kernel syscalls (0% hypervisor translation).</li>
+                                            <li><strong class="text-slate-300">Performance:</strong> 99.5% Native Dell Precision 16s speed.</li>
+                                            <li><strong class="text-slate-300">NPU Access:</strong> Direct pass-through to Intel 47 TOPS NPU.</li>
+                                            <li><strong class="text-slate-300">Memory:</strong> Full 32 GB LPCAMM2 8533 MT/s speed.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                                    <h4 class="font-bold text-slate-200 mb-2">Recommended Setup Command for Native Ubuntu GUI Container:</h4>
+                                    <pre class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto">docker run -d --name ubuntu-desktop-precision \
+  --net=host \
+  --memory=32g \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e DISPLAY=$DISPLAY \
+  lscr.io/linuxserver/webtop:ubuntu-kde</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WINDOW 4: FILE MANAGER -->
+                        <div id="win-file-manager" class="desktop-window glass-panel rounded-xl shadow-2xl border border-slate-700/60 w-full max-w-2xl h-[380px] top-16 left-10 sm:left-28 flex flex-col overflow-hidden hidden" onclick="bringToFront('win-file-manager')">
+                            <!-- Titlebar -->
+                            <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-file-manager')">
+                                <div class="flex items-center space-x-2 text-xs font-semibold text-slate-300">
+                                    <i class="fa-solid fa-folder-open text-amber-400"></i>
+                                    <span>Files — /home/dell/documents</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="minimizeWin('win-file-manager')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
+                                    <button onclick="maximizeWin('win-file-manager')" class="w-3.5 h-3.5 rounded-full bg-green-500/80 hover:bg-green-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-expand"></i></button>
+                                    <button onclick="closeWin('win-file-manager')" class="w-3.5 h-3.5 rounded-full bg-red-500/80 hover:bg-red-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                            <!-- Content -->
+                            <div class="flex-1 bg-slate-950/90 p-4 grid grid-cols-4 gap-4 text-center text-xs">
+                                <div class="p-3 rounded-lg hover:bg-slate-800/60 cursor-pointer flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-folder text-amber-400 text-3xl"></i>
+                                    <span>Projects</span>
+                                </div>
+                                <div class="p-3 rounded-lg hover:bg-slate-800/60 cursor-pointer flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-folder text-amber-400 text-3xl"></i>
+                                    <span>NPU_Models</span>
+                                </div>
+                                <div class="p-3 rounded-lg hover:bg-slate-800/60 cursor-pointer flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-file-code text-blue-400 text-3xl"></i>
+                                    <span>benchmark.py</span>
+                                </div>
+                                <div class="p-3 rounded-lg hover:bg-slate-800/60 cursor-pointer flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-file-lines text-slate-400 text-3xl"></i>
+                                    <span>precision_specs.json</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- UBUNTU BOTTOM STATUS BAR -->
+                <div class="h-6 bg-slate-900 border-t border-slate-800 px-3 flex items-center justify-between text-[11px] text-slate-400 font-mono z-30">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-emerald-400"><i class="fa-solid fa-circle text-[8px]"></i> Native LXC Container</span>
+                        <span>NVMe Gen4x4 TLC: 512 GB</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span>LPCAMM2: 8533 MT/s</span>
+                        <span class="text-dell-accent">Dell ProSupport 36m</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LAPTOP BOTTOM PALMREST LOGO -->
+            <div class="h-6 w-full flex items-center justify-center pt-1">
+                <span class="text-slate-500 font-bold text-xs tracking-widest uppercase opacity-60">D E L L</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR SLIDE-OUT: HARDWARE SPECS DRAWER -->
+    <div id="specs-drawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-slate-900/95 border-l border-slate-800 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 p-6 overflow-y-auto backdrop-blur-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-laptop-code text-dell-accent"></i> Dell Precision 16s Specs
+            </h2>
+            <button onclick="toggleDrawer('specs-drawer')" class="text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">PROCESSOR</div>
+                <div class="text-slate-200">Intel® Core™ Ultra 5 336H vPro®</div>
+                <div class="text-slate-400">12 Cores, up to 4.6 GHz, 47 TOPS Integrated NPU</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">MEMORY</div>
+                <div class="text-slate-200">32GB (1x32GB) LPCAMM2</div>
+                <div class="text-slate-400">Ultra-fast up to 8533 MT/s</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">STORAGE</div>
+                <div class="text-slate-200">512 GB SSD Gen4x4 TLC NVMe</div>
+                <div class="text-slate-400">Bracket for M.2 PCIe 2230 SSD</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">DISPLAY & GRAPHICS</div>
+                <div class="text-slate-200">16", WUXGA (1920x1200), Non-touch, 400nit</div>
+                <div class="text-slate-400">Intel® Integrated Graphics • WLAN/4G/5G capable</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">WIRELESS & CONNECTIVITY</div>
+                <div class="text-slate-200">Intel® Wi-Fi 7 BE211</div>
+                <div class="text-slate-400">Bluetooth® Core 6.0 wireless Card</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">CAMERA & AUDIO</div>
+                <div class="text-slate-200">FHD RGB HDR + IR Camera (1080p @ 30fps)</div>
+                <div class="text-slate-400">Presence Detection, TNR, Camera Shutter</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">BATTERY & CHASSIS</div>
+                <div class="text-slate-200">3-cell, 70 Wh ExpressCharge Capable</div>
+                <div class="text-slate-400">Aluminum (Top, Palmrest, Bottom) • Weight: 4.2 lb (1.90 kg)</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">WARRANTY</div>
+                <div class="text-slate-200">36 Months ProSupport with Onsite Service</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEFT SIDEBAR SLIDE-OUT: PORTS & I/O DRAWER -->
+    <div id="ports-drawer" class="fixed inset-y-0 left-0 w-full max-w-md bg-slate-900/95 border-r border-slate-800 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 p-6 overflow-y-auto backdrop-blur-xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-plug text-green-400"></i> Ports & Connectors (Dell Precision 16s)
+            </h2>
+            <button onclick="toggleDrawer('ports-drawer')" class="text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-bolt text-amber-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">2x USB Type-C® Thunderbolt™ 4</div>
+                    <div class="text-slate-400">40 Gbps signaling • DisplayPort™ 2.1 & Power Delivery</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-usb text-blue-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x USB Type-A 3.2 Gen 1 (PowerShare)</div>
+                    <div class="text-slate-400">5 Gbps transfer rate with device charging</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-usb text-slate-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x USB Type-A 3.2 Gen 1</div>
+                    <div class="text-slate-400">5 Gbps high-speed data</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-tv text-purple-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x HDMI 2.1</div>
+                    <div class="text-slate-400">Native 4K/8K external display output</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-network-wired text-emerald-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x RJ45 Ethernet (1 GbE)</div>
+                    <div class="text-slate-400">Full-duplex wired networking</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-headphones text-pink-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x Global Headset Jack</div>
+                    <div class="text-slate-400">3.5mm combo audio output & microphone input</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC & INTERACTION -->
+    <script>
+        window.onload = function() {
+            initChart();
+            startClock();
+            startMetricsSimulation();
+            window.openApp('spec-inspector'); // Default window
+        };
+
+        // Live Clock
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                const clockEl = document.getElementById('ubuntu-clock');
+                if (clockEl) {
+                    clockEl.innerText = now.toString().substring(0, 21);
+                }
+            }, 1000);
+        }
+
+        // Realtime System Monitor Simulation with Chart.js
+        function initChart() {
+            const ctx = document.getElementById('systemChart').getContext('2d');
+            systemChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['', '', '', '', '', '', '', '', '', ''],
+                    datasets: [
+                        {
+                            label: 'CPU Core Ultra 5 (%)',
+                            data: [12, 18, 15, 25, 14, 19, 22, 16, 14, 18],
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Intel NPU Activity (TOPS)',
+                            data: [40, 42, 47, 45, 47, 46, 44, 47, 45, 47],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { min: 0, max: 60, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function startMetricsSimulation() {
+            setInterval(() => {
+                const newCpu = Math.floor(Math.random() * 20) + 10;
+                const newNpu = Math.floor(Math.random() * 8) + 40;
+
+                // Update text stats
+                const cpuEl = document.getElementById('stat-cpu-val');
+                const npuEl = document.getElementById('stat-npu-val');
+                if (cpuEl) cpuEl.innerText = `${newCpu}%`;
+                if (npuEl) npuEl.innerText = `${newNpu} TOPS`;
+
+                // Update Chart
+                if (systemChart) {
+                    systemChart.data.datasets[0].data.shift();
+                    systemChart.data.datasets[0].data.push(newCpu);
+
+                    systemChart.data.datasets[1].data.shift();
+                    systemChart.data.datasets[1].data.push(newNpu);
+
+                    systemChart.update('quiet');
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
