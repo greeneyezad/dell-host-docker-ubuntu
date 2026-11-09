@@ -1,0 +1,64 @@
+{
+  "machine_type": "dell",
+  "host": "Dell Alienware 18 Area-51 Gaming Laptop",
+  "processor": {
+    "name": "Intel Core Ultra 9 Processor 290HX Plus (24-Core, 36Mb Cache, 2.7 Ghz to 5.5GHz) vPro",
+    "cores": 24,
+    "max_clock_ghz": 5.5,
+    "npu": "Intel AI Boost, 55 TOPS"
+  },
+  "memory": {
+    "capacity": "64GB (2x32GB), DDR5",
+    "speed": "up to 8533 MT/s LPDDR5x"
+  },
+  "storage": {
+    "device": "1 TB M.2 2230 SSD Gen4x4 TLC",
+    "notes": "Bracket for M.2 PCIe 2230 SSD"
+  },
+  "display": {
+    "size": "18\"",
+    "resolution": "WQXGA 2560x1600 (16:10)",
+    "touch": false,
+    "brightness_nits": 500
+  },
+  "graphics": "NVIDIA® GeForce RTX™ 5080",
+  "wireless": {
+    "wifi": "Intel® Killer Wi-Fi 7 BE1750 (2x2 320Hz) MIMO 802.11be Wireless LAN",
+    "bluetooth": "Bluetooth Core 5.4"
+  },
+  "camera": {
+    "video": "1080p (FHD) @ 30 fps UVC Compliant, FHD/IR Camera",
+    "features": ["Presence Detection", "TNR", "Camera Shutter"]
+  },
+  "battery": {
+    "cells": 6,
+    "capacity_whr": 96,
+    "integrated": true,
+    "expresscharge": true
+  },
+  "chassis": {
+    "material": "Aluminum (top, palmrest, bottom)",
+    "weight_kg": 1.9,
+    "weight_lb": 4.2
+  },
+  "warranty": "36 Months ProSupport with Onsite Service",
+  "ports": [
+    { "type": "USB-C Thunderbolt 4", "count": 2, "detail": "40 Gbps, DisplayPort 2.1, Power Delivery" },
+    { "type": "USB-A 3.2 Gen 1 (PowerShare)", "count": 1, "detail": "5 Gbps with device charging" },
+    { "type": "USB-A 3.2 Gen 1", "count": 1, "detail": "5 Gbps high-speed data" },
+    { "type": "HDMI 2.1", "count": 1, "detail": "Native 4K/8K external display output" },
+    { "type": "RJ45 Ethernet", "count": 1, "detail": "1 GbE full duplex" },
+    { "type": "Headset jack", "count": 1, "detail": "3.5mm combo audio and microphone" }
+  ],
+  "guest": {
+    "machine_type": "dell",
+    "kind": "native Ubuntu GUI container",
+    "desktop": "Ubuntu KDE desktop",
+    "hypervisor_overhead": "none (native kernel, no QEMU/TCG)"
+  },
+  "container": {
+    "name": "ubuntu-desktop-precision",
+    "image": "lscr.io/linuxserver/webtop:ubuntu-kde",
+    "command": "docker run -d --name ubuntu-desktop-precision --shm-size=1g -p 3000:3000 lscr.io/linuxserver/webtop:ubuntu-kde"
+  }
+}
