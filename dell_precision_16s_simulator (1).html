@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dell Precision 16s Workstation & Native Ubuntu Container Simulator</title>
+    <title>Dell Pro Precision 5 16S (PW516260) — Ubuntu 24.04 LTS Simulator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -124,7 +124,7 @@
                 
                 // Add user line
                 const userCmdLine = document.createElement('div');
-                userCmdLine.innerHTML = `<span class="text-emerald-400 font-bold">dell@precision-16s:~$</span> <span>${escapeHtml(input)}</span>`;
+                userCmdLine.innerHTML = `<span class="text-emerald-400 font-bold">dell@pw516260:~$</span> <span>${escapeHtml(input)}</span>`;
                 outputContainer.appendChild(userCmdLine);
 
                 // Process Command
@@ -136,42 +136,45 @@
                         responseLine.innerHTML = `Architecture:          x86_64<br>
 CPU op-mode(s):        32-bit, 64-bit<br>
 Model name:            Intel(R) Core(TM) Ultra 5 336H vPro(R)<br>
-Cores / Threads:       12 Cores / 16 Threads<br>
+Cores / Threads:       12 Cores / 12 Threads<br>
 Max Speed:             4.6000 GHz<br>
 NPU Coprocessor:       Intel AI Boost (47 TOPS)<br>
-Hypervisor vendor:     Native LXC / Container (No QEMU TCG Overhead)`;
+Vendor / Model:        Dell Inc. • PW516260 (Pro Precision 5 16S)<br>
+Virtualization:        Intel VT-x (vPro Enabled)`;
                         break;
                     case 'free -h':
                     case 'free':
                         responseLine.innerHTML = `              total        used        free      shared  buff/cache   available<br>
-Mem:           31Gi       5.8Gi       18.4Gi       210Mi       7.6Gi       25.1Gi<br>
-Swap:          11Gi          0B        11Gi<br>
-<span class="text-purple-400">Type: 32GB LPCAMM2 LPDDR5x @ 8533 MT/s</span>`;
+Mem:           15Gi       5.8Gi       6.4Gi       210Mi       2.8Gi       9.1Gi<br>
+Swap:           7Gi          0B         7Gi<br>
+<span class="text-purple-400">Type: 16GB (1x16GB) LPCAMM2 LPDDR5x @ 8533 MT/s</span>`;
                         break;
                     case 'neofetch':
                         responseLine.innerHTML = `<pre class="text-ubuntu-orange font-mono text-xs">
-       .-/+huosaaa\`    <span class="text-white font-bold">dell@precision-16s</span>
-    \`:/`       \` font-mono  ------------------
-  \`+hnvvvvvvvvvvvvvvvvvh+\`  <span class="text-dell-accent">OS</span>: Ubuntu 24.04 LTS x86_64
- .hnvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">Host</span>: Dell Precision 16s (5 Series)
-.hnvvvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">Kernel</span>: Linux 6.8.0-45-generic
-:hvvvvvvvvvvvvvvvvvvvvvvvh: <span class="text-dell-accent">Uptime</span>: 14 days, 3 hours
-.hnvvvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">Container</span>: Native Docker / LXC (No QEMU)
- .hnvvvvvvvvvvvvvvvvvvvvh. <span class="text-dell-accent">CPU</span>: Intel Core Ultra 5 336H (12) @ 4.6GHz
-  \`+hnvvvvvvvvvvvvvvvh+\`   <span class="text-dell-accent">NPU</span>: Intel Integrated (47 TOPS)
-    \`:/`       \`           <span class="text-dell-accent">Memory</span>: 6144MiB / 32768MiB (8533 MT/s)
-       .-/+huosaaa\`        
+         :+oooooooooooo+:      <span class="text-white font-bold">dell@pw516260</span>
+       -+oooooooooooooooo+-    ------------------
+      +oooooooooooooooooooo+   <span class="text-dell-accent">OS</span>: Ubuntu 24.04 LTS x86_64
+      ooooooooooooooooooooo    <span class="text-dell-accent">Host</span>: Dell Pro Precision 5 16S (PW516260)
+      +oooooooooooooooooooo+   <span class="text-dell-accent">Kernel</span>: Linux 6.8.0-45-generic
+       -+oooooooooooooooo+-    <span class="text-dell-accent">Uptime</span>: 14 days, 3 hours
+         :+oooooooooooo+:      <span class="text-dell-accent">Resolution</span>: 1920x1200 (16:10)
+                                <span class="text-dell-accent">CPU</span>: Intel Core Ultra 5 336H vPro (12) @ 4.6GHz
+                                <span class="text-dell-accent">NPU</span>: Intel AI Boost (47 TOPS)
+                                <span class="text-dell-accent">Memory</span>: 5888MiB / 16384MiB (8533 MT/s)
 </pre>`;
                         break;
-                    case 'docker ps':
-                        responseLine.innerHTML = `CONTAINER ID   IMAGE                   COMMAND                  CREATED        STATUS        PORTS
-9a8f7c1e3b2a   ubuntu-desktop:latest   "/init"                  2 hours ago    Up 2 hours    0.0.0.0:5900->5900/tcp`;
+                    case 'lsblk':
+                        responseLine.innerHTML = `NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+nvme0n1     259:0    0 238.5G  0 disk
+├─nvme0n1p1 259:1    0   512M  0 part /boot/efi
+└─nvme0n1p2 259:2    0 237.9G  0 part /
+<span class="text-slate-400">256 GB M.2 2230 SSD • PCIe Gen4x4 • TLC NAND</span>`;
                         break;
                     case 'uname -a':
-                        responseLine.innerHTML = `Linux precision-16s 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC x86_64 x86_64 x86_64 GNU/Linux`;
+                        responseLine.innerHTML = `Linux pw516260 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC x86_64 x86_64 x86_64 GNU/Linux`;
                         break;
                     case 'help':
-                        responseLine.innerHTML = `Available commands: <span class="text-dell-accent">lscpu</span>, <span class="text-dell-accent">free -h</span>, <span class="text-dell-accent">neofetch</span>, <span class="text-dell-accent">docker ps</span>, <span class="text-dell-accent">uname -a</span>, <span class="text-dell-accent">clear</span>`;
+                        responseLine.innerHTML = `Available commands: <span class="text-dell-accent">lscpu</span>, <span class="text-dell-accent">free -h</span>, <span class="text-dell-accent">neofetch</span>, <span class="text-dell-accent">lsblk</span>, <span class="text-dell-accent">uname -a</span>, <span class="text-dell-accent">clear</span>`;
                         break;
                     case 'clear':
                         outputContainer.innerHTML = '';
@@ -280,7 +283,7 @@ Swap:          11Gi          0B        11Gi<br>
                 <i class="fa-solid fa-laptop text-dell-accent"></i> DELL
             </span>
             <span class="text-slate-400 font-medium text-xs sm:text-sm border-l border-slate-700 pl-3">
-                Precision 16s Workstation <span class="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-500/20 ml-1">5 Series</span>
+                Pro Precision 5 Series 16S <span class="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-500/20 ml-1">PW516260</span>
             </span>
         </div>
 
@@ -315,17 +318,17 @@ Swap:          11Gi          0B        11Gi<br>
                 
                 <!-- WEBCAM & SENSORS ASSEMBLY -->
                 <div class="flex items-center space-x-2 bg-slate-900/80 px-3 py-0.5 rounded-full border border-slate-700/50">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600" title="IR Camera"></span>
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center" title="FHD RGB Camera">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600" title="Camera Shutter"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center" title="FHD RGB HDR Camera">
                         <span class="w-1 h-1 bg-blue-900 rounded-full"></span>
                     </span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600" title="Presence Sensor"></span>
-                    <span class="text-[10px] text-slate-500 font-mono ml-1">FHD 1080p IR</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600" title="Dual-array Microphone"></span>
+                    <span class="text-[10px] text-slate-500 font-mono ml-1">FHD RGB HDR 1080p</span>
                 </div>
 
                 <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
                     <span class="hidden md:inline"><i class="fa-solid fa-shield-halved text-blue-400"></i> Intel vPro®</span>
-                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700">Dell Slate Max</span>
+                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700">Slate Max 16</span>
                 </div>
             </div>
 
@@ -336,10 +339,10 @@ Swap:          11Gi          0B        11Gi<br>
                 <div class="h-7 bg-black/90 text-slate-200 text-xs px-3 flex items-center justify-between z-30 font-medium select-none border-b border-white/5">
                     <div class="flex items-center space-x-4">
                         <span class="hover:text-white cursor-pointer font-semibold flex items-center gap-1.5">
-                            <i class="fa-brands fa-ubuntu text-ubuntu-orange text-sm"></i> Ubuntu 24.04 LTS (Container)
+                            <i class="fa-brands fa-ubuntu text-ubuntu-orange text-sm"></i> Ubuntu 24.04 LTS
                         </span>
                         <span class="hidden md:inline hover:text-white cursor-pointer text-slate-400 text-[11px]" onclick="openApp('spec-inspector')">
-                            Host: Dell Precision 16s • Native LXC/Docker
+                            Host: Dell Pro Precision 5 16S • PW516260
                         </span>
                     </div>
 
@@ -352,7 +355,7 @@ Swap:          11Gi          0B        11Gi<br>
                     <div class="flex items-center space-x-3 text-slate-300 text-xs">
                         <span title="Wi-Fi 7 BE211"><i class="fa-solid fa-wifi text-slate-300"></i></span>
                         <span title="NPU 47 TOPS Active" class="text-emerald-400 text-[10px] font-mono bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">NPU: 12%</span>
-                        <span title="Battery: 70Wh (ExpressCharge)"><i class="fa-solid fa-battery-three-quarters text-emerald-400"></i> 88%</span>
+                        <span title="Battery: 57Wh (ExpressCharge Boost)"><i class="fa-solid fa-battery-three-quarters text-emerald-400"></i> 88%</span>
                         <span title="System Menu" class="cursor-pointer hover:text-white"><i class="fa-solid fa-caret-down"></i></span>
                     </div>
                 </div>
@@ -379,12 +382,12 @@ Swap:          11Gi          0B        11Gi<br>
                             <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">System Monitor</span>
                         </button>
 
-                        <!-- App Icon: Native vs QEMU Inspector -->
+                        <!-- App Icon: About This Computer -->
                         <button onclick="openApp('spec-inspector')" class="group relative p-2 rounded-xl hover:bg-white/10 transition text-slate-200">
                             <div class="w-8 h-8 rounded-lg bg-ubuntu-orange border border-orange-400/30 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition">
-                                <i class="fa-solid fa-bolt text-sm"></i>
+                                <i class="fa-solid fa-circle-info text-sm"></i>
                             </div>
-                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">Architecture & Performance</span>
+                            <span class="absolute left-16 bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50">About This Computer</span>
                         </button>
 
                         <!-- App Icon: File Manager -->
@@ -420,7 +423,7 @@ Swap:          11Gi          0B        11Gi<br>
                             <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-terminal')">
                                 <div class="flex items-center space-x-2 text-xs font-mono text-slate-300">
                                     <i class="fa-solid fa-terminal text-emerald-400"></i>
-                                    <span>dell-precision-16s:~ (bash) — Native LXC</span>
+                                    <span>dell@pw516260:~ (bash) — Ubuntu 24.04 LTS</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <button onclick="minimizeWin('win-terminal')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
@@ -431,15 +434,15 @@ Swap:          11Gi          0B        11Gi<br>
                             <!-- Terminal Body -->
                             <div id="terminal-body" class="flex-1 bg-slate-950/95 p-4 font-mono text-xs sm:text-sm text-slate-200 overflow-y-auto space-y-2 select-text">
                                 <div class="text-slate-400 text-xs">
-                                    Dell Precision 16s (5 Series) Native Linux Container Shell<br>
-                                    No QEMU/TCG translation layer active. Running at full native bare-metal speed.<br>
+                                    Dell Pro Precision 5 16S (PW516260) — Ubuntu 24.04 LTS preinstalled<br>
+                                    Native x86_64 kernel on Intel Core Ultra 5 336H vPro. No emulation layer.<br>
                                     Type <span class="text-dell-accent">help</span> to list available diagnostic commands.
                                 </div>
                                 <div id="terminal-output" class="space-y-2"></div>
                                 
                                 <div class="flex items-center space-x-2 pt-1">
-                                    <span class="text-emerald-400 font-bold">dell@precision-16s:~$</span>
-                                    <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-slate-100 font-mono focus:ring-0" placeholder="Type lscpu, free -h, neofetch, docker ps..." onkeydown="handleTerminalCommand(event)">
+                                    <span class="text-emerald-400 font-bold">dell@pw516260:~$</span>
+                                    <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-slate-100 font-mono focus:ring-0" placeholder="Type lscpu, free -h, neofetch, lsblk..." onkeydown="handleTerminalCommand(event)">
                                 </div>
                             </div>
                         </div>
@@ -474,13 +477,13 @@ Swap:          11Gi          0B        11Gi<br>
                                     </div>
                                     <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
                                         <div class="text-[10px] text-slate-400 uppercase font-bold">LPCAMM2 RAM</div>
-                                        <div id="stat-ram-val" class="text-xl font-mono font-bold text-purple-400 mt-1">6.2 / 32 GB</div>
-                                        <div class="text-[10px] text-slate-500">8533 MT/s LPDDR5x</div>
+                                        <div id="stat-ram-val" class="text-xl font-mono font-bold text-purple-400 mt-1">5.8 / 16 GB</div>
+                                        <div class="text-[10px] text-slate-500">8533 MT/s LPCAMM2</div>
                                     </div>
                                     <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
-                                        <div class="text-[10px] text-slate-400 uppercase font-bold">Hypervisor Latency</div>
-                                        <div class="text-xl font-mono font-bold text-amber-400 mt-1">0.02 ms</div>
-                                        <div class="text-[10px] text-amber-500/80">Native Container</div>
+                                        <div class="text-[10px] text-slate-400 uppercase font-bold">NVMe SSD</div>
+                                        <div class="text-xl font-mono font-bold text-amber-400 mt-1">256 GB</div>
+                                        <div class="text-[10px] text-amber-500/80">M.2 2230 • Gen4x4</div>
                                     </div>
                                 </div>
 
@@ -491,13 +494,13 @@ Swap:          11Gi          0B        11Gi<br>
                             </div>
                         </div>
 
-                        <!-- WINDOW 3: SPEC INSPECTOR (QEMU VS NATIVE CONTAINER EXPLANATION) -->
+                        <!-- WINDOW 3: ABOUT THIS COMPUTER (PW516260 SPECS, OS & DRIVERS) -->
                         <div id="win-spec-inspector" class="desktop-window glass-panel rounded-xl shadow-2xl border border-slate-700/60 w-full max-w-3xl h-[480px] top-8 left-8 sm:left-36 flex flex-col overflow-hidden" onclick="bringToFront('win-spec-inspector')">
                             <!-- Titlebar -->
                             <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-spec-inspector')">
                                 <div class="flex items-center space-x-2 text-xs font-semibold text-slate-300">
                                     <i class="fa-solid fa-bolt text-ubuntu-orange"></i>
-                                    <span>Architecture Comparison: QEMU TCG vs Native Linux Container</span>
+                                    <span>About This Computer — Dell Pro Precision 5 16S (PW516260)</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <button onclick="minimizeWin('win-spec-inspector')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
@@ -510,51 +513,67 @@ Swap:          11Gi          0B        11Gi<br>
                                 <div class="bg-gradient-to-r from-ubuntu-orange/20 to-slate-900 p-4 rounded-xl border border-ubuntu-orange/30 flex items-start space-x-3">
                                     <i class="fa-solid fa-circle-check text-ubuntu-orange text-xl mt-0.5"></i>
                                     <div>
-                                        <h3 class="font-bold text-white text-base">Why Native Containers match Dell Precision 16s Speed</h3>
+                                        <h3 class="font-bold text-white text-base">Dell Pro Precision 5 Series 16S — PW516260</h3>
                                         <p class="text-slate-300 text-xs mt-1 leading-relaxed">
-                                            Your previous QEMU setup was running in software emulation mode (<code class="bg-slate-800 text-amber-300 px-1 py-0.5 rounded">"accelerator": "tcg"</code>) because nested virtualization was disabled on the host. By switching to a native Docker/LXC container with X11/Wayland or noVNC forwarding, you completely eliminate QEMU CPU instruction translation overhead.
+                                            Mobile workstation running <strong class="text-white">Ubuntu 24.04 LTS</strong>, the operating system preinstalled by Dell. It runs directly on the Intel Core Ultra 5 336H vPro silicon — native x86_64 kernel, full access to the 47 TOPS NPU, no emulation or container layer.
                                         </p>
+                                        <div class="flex flex-wrap gap-2 mt-2 text-[10px] font-semibold">
+                                            <span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-slate-300">Intel® vPro® Enabled</span>
+                                            <span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-slate-300">ENERGY STAR® Qualified</span>
+                                            <span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-slate-300">Non-Windows OS Selected</span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <!-- QEMU TCG BOX -->
-                                    <div class="bg-red-950/30 p-4 rounded-xl border border-red-800/40 space-y-2">
-                                        <div class="flex items-center space-x-2 text-red-400 font-bold">
-                                            <i class="fa-solid fa-triangle-exclamation"></i>
-                                            <span>Old Configuration (QEMU TCG)</span>
+                                    <!-- HARDWARE SNAPSHOT -->
+                                    <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 space-y-2">
+                                        <div class="flex items-center space-x-2 text-dell-accent font-bold">
+                                            <i class="fa-solid fa-microchip"></i>
+                                            <span>Hardware Snapshot</span>
                                         </div>
                                         <ul class="space-y-1.5 text-xs text-slate-400 list-disc pl-4">
-                                            <li><strong class="text-slate-300">Execution:</strong> Software translation via Tiny Code Generator (TCG).</li>
-                                            <li><strong class="text-slate-300">Performance:</strong> 10x to 50x slower than bare metal.</li>
-                                            <li><strong class="text-slate-300">CPU Usage:</strong> Maxes out single core doing software instruction parsing.</li>
-                                            <li><strong class="text-slate-300">RAM Ceiling:</strong> Locked to 16 GB max ceiling.</li>
+                                            <li><strong class="text-slate-300">Processor:</strong> Intel® Core™ Ultra 5 336H vPro® — 12 cores, up to 4.6 GHz.</li>
+                                            <li><strong class="text-slate-300">NPU:</strong> Intel® AI Boost — 47 TOPS.</li>
+                                            <li><strong class="text-slate-300">Graphics:</strong> Intel® Integrated Graphics.</li>
+                                            <li><strong class="text-slate-300">Memory:</strong> 16 GB (1x16GB) LPCAMM2, up to 8533 MT/s.</li>
+                                            <li><strong class="text-slate-300">Storage:</strong> 256 GB M.2 2230 SSD, PCIe Gen4x4 TLC.</li>
+                                            <li><strong class="text-slate-300">Display:</strong> 16" WUXGA 1920x1200, non-touch, 400 nit.</li>
                                         </ul>
                                     </div>
 
-                                    <!-- NATIVE CONTAINER BOX -->
-                                    <div class="bg-emerald-950/30 p-4 rounded-xl border border-emerald-800/40 space-y-2">
+                                    <!-- BUILD, SECURITY & SERVICE -->
+                                    <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 space-y-2">
                                         <div class="flex items-center space-x-2 text-emerald-400 font-bold">
-                                            <i class="fa-solid fa-rocket"></i>
-                                            <span>New Architecture (LXC / Docker)</span>
+                                            <i class="fa-solid fa-shield-halved"></i>
+                                            <span>Build, Security &amp; Service</span>
                                         </div>
                                         <ul class="space-y-1.5 text-xs text-slate-400 list-disc pl-4">
-                                            <li><strong class="text-slate-300">Execution:</strong> Native Linux kernel syscalls (0% hypervisor translation).</li>
-                                            <li><strong class="text-slate-300">Performance:</strong> 99.5% Native Dell Precision 16s speed.</li>
-                                            <li><strong class="text-slate-300">NPU Access:</strong> Direct pass-through to Intel 47 TOPS NPU.</li>
-                                            <li><strong class="text-slate-300">Memory:</strong> Full 32 GB LPCAMM2 8533 MT/s speed.</li>
+                                            <li><strong class="text-slate-300">Chassis:</strong> Aluminum top, palmrest &amp; bottom • Slate Max 16 bottom door.</li>
+                                            <li><strong class="text-slate-300">Keyboard:</strong> English-US mini-LED backlit, with numeric keypad.</li>
+                                            <li><strong class="text-slate-300">Security:</strong> Fingerprint reader (without Control Vault 3+), Kensington wedge lock, no smart card reader.</li>
+                                            <li><strong class="text-slate-300">Wireless:</strong> Intel® Wi-Fi 7 BE211 + Bluetooth® Core 6.0.</li>
+                                            <li><strong class="text-slate-300">Battery:</strong> 3-cell 57 Wh, ExpressCharge &amp; ExpressCharge Boost.</li>
+                                            <li><strong class="text-slate-300">Service:</strong> 12-month Basic Onsite, ProSupport upgrade to 36 months.</li>
                                         </ul>
                                     </div>
                                 </div>
 
-                                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-                                    <h4 class="font-bold text-slate-200 mb-2">Recommended Setup Command for Native Ubuntu GUI Container:</h4>
-                                    <pre class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto">docker run -d --name ubuntu-desktop-precision \
-  --net=host \
-  --memory=32g \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -e DISPLAY=$DISPLAY \
-  lscr.io/linuxserver/webtop:ubuntu-kde</pre>
+                                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                                    <h4 class="font-bold text-slate-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-download text-dell-accent"></i>
+                                        Drivers shipped for this PW516260 configuration
+                                    </h4>
+                                    <ol class="space-y-1.5 text-xs text-slate-400 list-decimal pl-5">
+                                        <li>Dell Pro 3 14 P314260 / 3 16 P316260 / 5 14 P514260 / 16 P516260 / 7 13 P713260 / 7 13 2-in-1 P703260 / 7 14 P714260 / 7 14 2-in-1 P704260 and Pro Precision 5 14S PW514260 / 5 16S PW516260 System BIOS</li>
+                                        <li>Dell Dock WD19 / WD22TB4 Firmware Update Utility</li>
+                                        <li>Dell Dock HD22Q Firmware Update Utility</li>
+                                        <li>Dell Pro 3 14 P314260 / 3 16 P316260 / 5 14 P514260 / 5 16 P516260 / 7 13 P713260 / 7 13 2-in-1 P703260 / 7 14 P714260 / 7 14 2-in-1 P704260 and Precision 5 14S PW514260 / Precision 5 16S PW516260 System BIOS</li>
+                                    </ol>
+                                    <a href="https://www.dell.com/support/product-details/en-us/product/dell-pro-precision-pw516260-laptop/drivers" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-mono text-[11px] break-all">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                        dell.com/support → Dell Pro Precision PW516260 → Drivers
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -565,7 +584,7 @@ Swap:          11Gi          0B        11Gi<br>
                             <div class="h-9 bg-slate-900/90 px-3 flex items-center justify-between border-b border-slate-800 cursor-move" onmousedown="startDrag(event, 'win-file-manager')">
                                 <div class="flex items-center space-x-2 text-xs font-semibold text-slate-300">
                                     <i class="fa-solid fa-folder-open text-amber-400"></i>
-                                    <span>Files — /home/dell/documents</span>
+                                    <span>Files — /home/dell/Documents</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <button onclick="minimizeWin('win-file-manager')" class="w-3.5 h-3.5 rounded-full bg-yellow-500/80 hover:bg-yellow-400 flex items-center justify-center text-[8px] text-black"><i class="fa-solid fa-minus"></i></button>
@@ -584,12 +603,12 @@ Swap:          11Gi          0B        11Gi<br>
                                     <span>NPU_Models</span>
                                 </div>
                                 <div class="p-3 rounded-lg hover:bg-slate-800/60 cursor-pointer flex flex-col items-center gap-2">
-                                    <i class="fa-solid fa-file-code text-blue-400 text-3xl"></i>
-                                    <span>benchmark.py</span>
+                                    <i class="fa-solid fa-file-lines text-slate-400 text-3xl"></i>
+                                    <span>drivers.txt</span>
                                 </div>
                                 <div class="p-3 rounded-lg hover:bg-slate-800/60 cursor-pointer flex flex-col items-center gap-2">
-                                    <i class="fa-solid fa-file-lines text-slate-400 text-3xl"></i>
-                                    <span>precision_specs.json</span>
+                                    <i class="fa-solid fa-file-code text-blue-400 text-3xl"></i>
+                                    <span>PW516260_specs.json</span>
                                 </div>
                             </div>
                         </div>
@@ -600,8 +619,8 @@ Swap:          11Gi          0B        11Gi<br>
                 <!-- UBUNTU BOTTOM STATUS BAR -->
                 <div class="h-6 bg-slate-900 border-t border-slate-800 px-3 flex items-center justify-between text-[11px] text-slate-400 font-mono z-30">
                     <div class="flex items-center space-x-3">
-                        <span class="text-emerald-400"><i class="fa-solid fa-circle text-[8px]"></i> Native LXC Container</span>
-                        <span>NVMe Gen4x4 TLC: 512 GB</span>
+                        <span class="text-emerald-400"><i class="fa-solid fa-circle text-[8px]"></i> Ubuntu 24.04 LTS (preinstalled)</span>
+                        <span>NVMe Gen4x4 TLC: 256 GB</span>
                     </div>
                     <div class="flex items-center space-x-3">
                         <span>LPCAMM2: 8533 MT/s</span>
@@ -621,7 +640,7 @@ Swap:          11Gi          0B        11Gi<br>
     <div id="specs-drawer" class="fixed inset-y-0 right-0 w-full max-w-md bg-slate-900/95 border-l border-slate-800 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 p-6 overflow-y-auto backdrop-blur-xl">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-laptop-code text-dell-accent"></i> Dell Precision 16s Specs
+                <i class="fa-solid fa-laptop-code text-dell-accent"></i> Dell Pro Precision 5 16S Specs
             </h2>
             <button onclick="toggleDrawer('specs-drawer')" class="text-slate-400 hover:text-white text-lg">
                 <i class="fa-solid fa-xmark"></i>
@@ -630,50 +649,94 @@ Swap:          11Gi          0B        11Gi<br>
 
         <div class="space-y-4 text-xs">
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">MODEL</div>
+                <div class="text-slate-200">Dell Pro Precision 5 Series 16S</div>
+                <div class="text-slate-400">PW516260 • Mobile Workstation</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">OPERATING SYSTEM</div>
+                <div class="text-slate-200">Ubuntu Linux 24.04 LTS — preinstalled</div>
+                <div class="text-slate-400">Non-Windows operating system selected • Intel® vPro® Enabled</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-dell-accent font-bold mb-1">PROCESSOR</div>
                 <div class="text-slate-200">Intel® Core™ Ultra 5 336H vPro®</div>
-                <div class="text-slate-400">12 Cores, up to 4.6 GHz, 47 TOPS Integrated NPU</div>
+                <div class="text-slate-400">12 cores, up to 4.6 GHz, 47 TOPS NPU</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-dell-accent font-bold mb-1">MEMORY</div>
-                <div class="text-slate-200">32GB (1x32GB) LPCAMM2</div>
-                <div class="text-slate-400">Ultra-fast up to 8533 MT/s</div>
+                <div class="text-slate-200">16GB (1x16GB) LPCAMM2</div>
+                <div class="text-slate-400">Up to 8533 MT/s</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-dell-accent font-bold mb-1">STORAGE</div>
-                <div class="text-slate-200">512 GB SSD Gen4x4 TLC NVMe</div>
+                <div class="text-slate-200">256GB M.2 2230 SSD Gen4x4 TLC</div>
                 <div class="text-slate-400">Bracket for M.2 PCIe 2230 SSD</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-dell-accent font-bold mb-1">DISPLAY & GRAPHICS</div>
-                <div class="text-slate-200">16", WUXGA (1920x1200), Non-touch, 400nit</div>
+                <div class="text-slate-200">16", WUXGA (1920x1200), Non-touch, 400 nit</div>
                 <div class="text-slate-400">Intel® Integrated Graphics • WLAN/4G/5G capable</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <div class="text-dell-accent font-bold mb-1">WIRELESS & CONNECTIVITY</div>
-                <div class="text-slate-200">Intel® Wi-Fi 7 BE211</div>
-                <div class="text-slate-400">Bluetooth® Core 6.0 wireless Card</div>
+                <div class="text-dell-accent font-bold mb-1">WIRELESS, BLUETOOTH & SOFTWARE</div>
+                <div class="text-slate-200">Intel® Wi-Fi 7 BE211 • Intel BE211 WLAN Driver</div>
+                <div class="text-slate-400">Qualified against Bluetooth® Core 6.0 • Intel® Connectivity Performance Suite</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-dell-accent font-bold mb-1">CAMERA & AUDIO</div>
-                <div class="text-slate-200">FHD RGB HDR + IR Camera (1080p @ 30fps)</div>
-                <div class="text-slate-400">Presence Detection, TNR, Camera Shutter</div>
+                <div class="text-slate-200">FHD RGB HDR Camera, 1080p at 30 fps</div>
+                <div class="text-slate-400">TNR • Camera Shutter • Microphone</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">KEYBOARD</div>
+                <div class="text-slate-200">English-US Mini-LED backlit keyboard</div>
+                <div class="text-slate-400">With numeric keypad</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <div class="text-dell-accent font-bold mb-1">BATTERY & CHASSIS</div>
-                <div class="text-slate-200">3-cell, 70 Wh ExpressCharge Capable</div>
-                <div class="text-slate-400">Aluminum (Top, Palmrest, Bottom) • Weight: 4.2 lb (1.90 kg)</div>
+                <div class="text-slate-200">3-cell, 57 Wh, ExpressCharge &amp; ExpressCharge Boost</div>
+                <div class="text-slate-400">Aluminum top, palmrest &amp; bottom • WLAN cover • Slate Max 16 bottom door</div>
             </div>
 
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <div class="text-dell-accent font-bold mb-1">WARRANTY</div>
-                <div class="text-slate-200">36 Months ProSupport with Onsite Service</div>
+                <div class="text-dell-accent font-bold mb-1">SECURITY & SLOTS</div>
+                <div class="text-slate-200">Fingerprint reader without Control Vault 3+</div>
+                <div class="text-slate-400">Kensington wedge lock slot • Nano-SIM (optional) • No smart card reader</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">DIMENSIONS & WEIGHT</div>
+                <div class="text-slate-200">358.60 mm × 253.40 mm • Starts at 4.2 lb (1.90 kg)</div>
+                <div class="text-slate-400">Height: 0.43 in (10.88 mm) front / 0.60 in (15.16 mm) rear / 0.79 in (19.95 mm) max</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">SERVICE & WARRANTY</div>
+                <div class="text-slate-200">Basic Hardware Service with Onsite Support After Remote Diagnosis, 12 months</div>
+                <div class="text-slate-400">Upgrade: ProSupport with Onsite Service After Remote Diagnosis, 36 months</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">ENERGY & SOFTWARE</div>
+                <div class="text-slate-200">ENERGY STAR® Qualified</div>
+                <div class="text-slate-400">Microsoft 365 30-day trial activation • Non-Windows system management</div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                <div class="text-dell-accent font-bold mb-1">DRIVERS</div>
+                <div class="text-slate-200">PW516260 System BIOS</div>
+                <div class="text-slate-400">Dell Dock WD19 / WD22TB4 Firmware Update Utility • Dell Dock HD22Q Firmware Update Utility</div>
+                <a href="https://www.dell.com/support/product-details/en-us/product/dell-pro-precision-pw516260-laptop/drivers" target="_blank" rel="noopener" class="inline-block mt-1 text-emerald-400 hover:text-emerald-300 font-mono text-[11px] break-all">dell.com/support → PW516260 drivers</a>
             </div>
         </div>
     </div>
@@ -682,7 +745,7 @@ Swap:          11Gi          0B        11Gi<br>
     <div id="ports-drawer" class="fixed inset-y-0 left-0 w-full max-w-md bg-slate-900/95 border-r border-slate-800 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 p-6 overflow-y-auto backdrop-blur-xl">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
             <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-plug text-green-400"></i> Ports & Connectors (Dell Precision 16s)
+                <i class="fa-solid fa-plug text-green-400"></i> Ports & Slots (Dell Pro Precision 5 16S)
             </h2>
             <button onclick="toggleDrawer('ports-drawer')" class="text-slate-400 hover:text-white text-lg">
                 <i class="fa-solid fa-xmark"></i>
@@ -735,6 +798,30 @@ Swap:          11Gi          0B        11Gi<br>
                 <div>
                     <div class="text-white font-bold">1x Global Headset Jack</div>
                     <div class="text-slate-400">3.5mm combo audio output & microphone input</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-lock text-amber-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x Kensington Wedge Shaped Lock Slot</div>
+                    <div class="text-slate-400">Security cable anchoring</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-sim-card text-cyan-400 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">1x Nano-SIM Card Slot (optional)</div>
+                    <div class="text-slate-400">WWAN / 4G / 5G capable • WLAN cover • Bracket for FPR &amp; WWAN</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start space-x-3">
+                <i class="fa-solid fa-ban text-slate-500 text-xl mt-1"></i>
+                <div>
+                    <div class="text-white font-bold">No Smart Card Reader</div>
+                    <div class="text-slate-400">Not configured on this build</div>
                 </div>
             </div>
         </div>

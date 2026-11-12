@@ -1,63 +1,100 @@
 {
   "machine_type": "dell",
-  "host": "Dell Precision 16s (5 Series)",
+  "model": "PW516260",
+  "product_name": "Dell Pro Precision 5 Series 16S Laptop",
+  "host": "Dell Pro Precision 5 16S (PW516260)",
+  "operating_system": {
+    "name": "Ubuntu Linux 24.04 LTS",
+    "preinstalled": true,
+    "class": "non-windows",
+    "system_management_software": "Non-Windows or No OS"
+  },
   "processor": {
     "name": "Intel Core Ultra 5 336H vPro",
     "cores": 12,
     "max_clock_ghz": 4.6,
     "npu": "Intel AI Boost, 47 TOPS"
   },
-  "memory": {
-    "capacity": "32GB (1x32GB) LPCAMM2",
-    "speed": "up to 8533 MT/s LPDDR5x"
-  },
-  "storage": {
-    "device": "512 GB SSD Gen4x4 TLC NVMe",
-    "notes": "Bracket for M.2 PCIe 2230 SSD"
-  },
+  "graphics": "Intel Integrated Graphics",
   "display": {
     "size": "16\"",
     "resolution": "WUXGA 1920x1200 (16:10)",
     "touch": false,
-    "brightness_nits": 400
+    "brightness_nits": 400,
+    "cellular_capable": "WLAN/4G/5G"
   },
-  "graphics": "Intel Integrated Graphics",
+  "memory": {
+    "capacity": "16GB (1x16GB) LPCAMM2",
+    "speed": "up to 8533 MT/s"
+  },
+  "storage": {
+    "device": "256GB M.2 2230 SSD Gen4x4 TLC",
+    "bracket": "Bracket for M.2 PCIe 2230 SSD"
+  },
   "wireless": {
     "wifi": "Intel Wi-Fi 7 BE211",
-    "bluetooth": "Bluetooth Core 6.0"
+    "wlan_driver": "Intel BE211 WLAN Driver",
+    "bluetooth": "Qualified against Bluetooth Core 6.0",
+    "connectivity_performance_suite": "Intel Connectivity Performance Suite"
   },
   "camera": {
-    "video": "FHD RGB HDR + IR (1080p @ 30fps)",
-    "features": ["Presence Detection", "TNR", "Camera Shutter"]
+    "video": "FHD RGB HDR, 1080p at 30 fps",
+    "features": ["TNR", "Camera Shutter", "Microphone"]
   },
+  "keyboard": "English-US Mini-LED backlit keyboard with numeric keypad",
   "battery": {
     "cells": 3,
-    "capacity_wh": 70,
-    "expresscharge": true
+    "capacity_wh": 57,
+    "expresscharge": true,
+    "expresscharge_boost": true
   },
   "chassis": {
-    "material": "Aluminum (top, palmrest, bottom)",
+    "material": "Aluminum (Top Cover, Palmrest, Bottom Cover) + WLAN Tray",
+    "cover": "WLAN cover",
+    "bottom_door": "Assy, Door - BTM DOOR RJ LPCAMM SLATE MAX 16",
     "weight_kg": 1.9,
-    "weight_lb": 4.2
+    "weight_lb": 4.2,
+    "dimensions_mm": {
+      "width": 358.6,
+      "depth": 253.4,
+      "height_front": 10.88,
+      "height_rear": 15.16,
+      "height_max": 19.95
+    }
   },
-  "warranty": "36 Months ProSupport with Onsite Service",
+  "security": {
+    "fingerprint_reader": "Fingerprint Reader without Control Vault 3+",
+    "fingerprint_bracket": "Bracket for FPR and WWAN",
+    "smart_card_reader": false,
+    "kensington_wedge_lock_slot": true
+  },
+  "slots": [
+    "1x Kensington Wedge Shaped Lock Slot",
+    "1x Nano-SIM card slot (optional)",
+    "Smart card reader (optional, not configured on this build)"
+  ],
   "ports": [
-    { "type": "USB-C Thunderbolt 4", "count": 2, "detail": "40 Gbps, DisplayPort 2.1, Power Delivery" },
+    { "type": "USB Type-C Thunderbolt 4", "count": 2, "detail": "40 Gbps, DisplayPort 2.1, Power Delivery" },
     { "type": "USB-A 3.2 Gen 1 (PowerShare)", "count": 1, "detail": "5 Gbps with device charging" },
     { "type": "USB-A 3.2 Gen 1", "count": 1, "detail": "5 Gbps high-speed data" },
-    { "type": "HDMI 2.1", "count": 1, "detail": "Native 4K/8K external display output" },
-    { "type": "RJ45 Ethernet", "count": 1, "detail": "1 GbE full duplex" },
-    { "type": "Headset jack", "count": 1, "detail": "3.5mm combo audio and microphone" }
+    { "type": "HDMI 2.1", "count": 1, "detail": "External display output" },
+    { "type": "RJ45 Ethernet", "count": 1, "detail": "1 GbE" },
+    { "type": "Global headset jack", "count": 1, "detail": "3.5mm combo audio and microphone" }
   ],
-  "guest": {
-    "machine_type": "dell",
-    "kind": "native Ubuntu GUI container",
-    "desktop": "Ubuntu KDE desktop",
-    "hypervisor_overhead": "none (native kernel, no QEMU/TCG)"
+  "energy_star": "ENERGY STAR Qualified",
+  "systems_management": "Intel vPro Enabled",
+  "software": {
+    "microsoft_office": "Activate Your Microsoft 365 For A 30-Day Trial"
   },
-  "container": {
-    "name": "ubuntu-desktop-precision",
-    "image": "lscr.io/linuxserver/webtop:ubuntu-kde",
-    "command": "docker run -d --name ubuntu-desktop-precision --shm-size=1g -p 3000:3000 lscr.io/linuxserver/webtop:ubuntu-kde"
-  }
+  "warranty": {
+    "base": "Basic Hardware Service with Onsite Support After Remote Diagnosis, 12 months",
+    "upgrade": "ProSupport with Onsite Service After Remote Diagnosis, 36 months"
+  },
+  "drivers": [
+    "Dell Pro 3 14 P314260/3 16 P316260/5 14 P514260/16 P516260/7 13 P713260/7 13 2-in-1 P703260/7 14 P714260/7 14 2-in-1 P704260 and Pro Precision 5 14S PW514260/5 16S PW516260 System BIOS",
+    "Dell Dock WD19/WD22TB4 Firmware Update Utility",
+    "Dell Dock HD22Q Firmware Update Utility",
+    "Dell Pro 3 14 P314260/3 16 P316260/5 14 P514260/5 16 P516260/7 13 P713260/7 13 2-in-1 P703260/7 14 P714260/ 7 14 2-in-1 P704260 and Precision 5 14S PW514260/Precision 5 16S PW516260 System BIOS"
+  ],
+  "drivers_url": "https://www.dell.com/support/product-details/en-us/product/dell-pro-precision-pw516260-laptop/drivers"
 }
